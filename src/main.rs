@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader};
 use serde::Deserialize;
 use image::{RgbaImage, Rgba};
 use rusttype::{point, Font, Scale};
@@ -8,11 +8,22 @@ use imageproc::rect::Rect;
 use palette::{Srgb, Hsl, FromColor, Oklab};
 use acap::euclid::Euclidean;
 use acap::Proximity;
+use clap::Parser;
 
 const BLOCK_SIZE_X: u32 = 400;
 const BLOCK_SIZE_Y: u32 = 300;
 
 const COLUMNS: usize = 8;
+
+#[derive(Parser)]
+struct Cli {
+    /// The path to the file for color entry
+    input: std::path::PathBuf,
+
+    // Output file name
+    #[arg(short, long, default_value = "palette.png")]
+    output: String
+}
 
 #[derive(Debug, Deserialize, Clone)]
 struct ColorEntry {
@@ -191,8 +202,10 @@ fn sort_colors(colors: Vec<ColorEntry>) -> Vec<ColorEntry>{
 }
 
 fn main() {
+    let args = Cli::parse();
+
     // Load JSON file
-    let entry_file = File::open("example.json").expect("Failed to open file");
+    let entry_file = File::open(args.input).expect("Failed to open file");
     let entry_reader = BufReader::new(entry_file);
 
     // Make and sort color entry vector
@@ -248,7 +261,7 @@ fn main() {
         draw_centered_text(&mut imgbuf, &font, &color.name, name_rect, base_color, text_color, 3.5, -10);
         draw_centered_text(&mut imgbuf, &font, &color.hex, hex_rect, base_color, text_color, 6.5, 0-(BLOCK_SIZE_Y/20) as i32);
     }
-
-    imgbuf.save("palette.png").expect("Failed to save image");
-    println!("Saved {} color blocks to palette.png", colors.len());
+    let output_file = std::path::PathBuf::from(&args.output);
+    imgbuf.save(output_file).expect("Failed to save image");
+    println!("Saved {} color blocks to {}", colors.len(), args.output);
 }

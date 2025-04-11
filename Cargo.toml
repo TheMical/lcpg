@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 ab_glyph = "0.2.29"
 acap = "0.4.0"
+clap = { version = "4.0", features = ["derive"] }
 fast_hilbert = "2.0.1"
 hilbert = "0.1.2"
 image = "0.25.6"
